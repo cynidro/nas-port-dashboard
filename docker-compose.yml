@@ -3,22 +3,10 @@ services:
     build: .
     container_name: port-dashboard
     restart: unless-stopped
-
-    # host 네트워크 = ss로 NAS 시스템 포트 전부 볼 수 있음
-    network_mode: host
-
-    volumes:
-      # Docker 소켓 마운트 = 다른 컨테이너 정보 읽기
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
+    ports:
+      - "3001:3001"       # ← 원하는 포트로 바꾸세요
     environment:
-      - PORT=3001          # ← 원하는 포트로 바꾸세요
-      - POLL_INTERVAL=30000
+      - PORT=3001
       - TZ=Asia/Seoul
-
-    # 선택: 로그 크기 제한
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+    volumes:
+      - ./services.json:/app/services.json  # 서비스 목록 (컨테이너 재시작 없이 수정 가능)

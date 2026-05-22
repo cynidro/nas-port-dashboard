@@ -3,185 +3,213 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NAS Port Dashboard</title>
-  <meta name="description" content="NAS 서비스 포트 관리 대시보드 - Docker 컨테이너 및 시스템 포트 실시간 모니터링" />
+  <title>서비스 현황</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+    header p {
+      font-size: 0.8rem;
+      color: #475569;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #1a1f2e;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.15s, border-color 0.15s;
+      text-decoration: none;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #334155;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+    .status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.up   { background: #22c55e; box-shadow: 0 0 8px #22c55e88; }
+    .status-dot.down { background: #ef4444; }
+    .status-dot.loading { background: #475569; animation: blink 1s infinite; }
+
+    @keyframes blink { 50% { opacity: 0.3; } }
+
+    .card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+    .port-badge {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      color: #64748b;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.78rem;
+    }
+    .latency {
+      color: #475569;
+      font-size: 0.72rem;
+    }
+    .latency.fast { color: #22c55e; }
+    .latency.slow { color: #f59e0b; }
+
+    .go-btn {
+      display: block;
+      text-align: center;
+      padding: 9px;
+      background: #1e293b;
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .card:hover .go-btn {
+      background: #6366f1;
+      color: white;
+    }
+    .go-btn.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .refresh-btn {
+      display: block;
+      margin: 28px auto 0;
+      padding: 8px 20px;
+      background: transparent;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      color: #475569;
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .refresh-btn:hover { border-color: #334155; color: #94a3b8; }
+
+    .updated {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #334155;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <!-- Background particles -->
-  <div class="bg-particles" id="bgParticles"></div>
-
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect x="2" y="2" width="10" height="10" rx="2" fill="#6366f1"/>
-            <rect x="16" y="2" width="10" height="10" rx="2" fill="#8b5cf6" opacity="0.7"/>
-            <rect x="2" y="16" width="10" height="10" rx="2" fill="#8b5cf6" opacity="0.7"/>
-            <rect x="16" y="16" width="10" height="10" rx="2" fill="#6366f1" opacity="0.5"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="brand-title">NAS Port Dashboard</h1>
-          <p class="brand-subtitle">Port Management Console</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <div class="connection-badge" id="connectionBadge">
-          <span class="status-dot" id="statusDot"></span>
-          <span id="statusText">연결 중...</span>
-        </div>
-        <button class="btn-refresh" id="btnRefresh" onclick="manualRefresh()">
-          <svg class="refresh-icon" id="refreshIcon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M13.65 2.35A8 8 0 1 0 15 8h-2a6 6 0 1 1-1.06-3.35L10 6h5V1l-1.35 1.35z" fill="currentColor"/>
-          </svg>
-          새로고침
-        </button>
-        <div class="last-updated" id="lastUpdated">--</div>
-      </div>
-    </div>
+  <header>
+    <h1>🏠 서비스 현황</h1>
+    <p id="subtitle">확인 중...</p>
   </header>
 
-  <!-- Main -->
-  <main class="main">
+  <div class="grid" id="grid">
+    <!-- cards rendered by JS -->
+  </div>
 
-    <!-- Stats bar -->
-    <section class="stats-grid" id="statsGrid">
-      <div class="stat-card" id="statSystem">
-        <div class="stat-icon stat-icon--blue">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M3 4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4zm0 6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2zm0 6a1 1 0 0 1 1-1h4a1 1 0 0 1 0 2H4a1 1 0 0 1-1-1z" fill="currentColor"/>
-          </svg>
-        </div>
-        <div>
-          <div class="stat-value" id="statSystemCount">-</div>
-          <div class="stat-label">시스템 포트</div>
-        </div>
-      </div>
-      <div class="stat-card" id="statDocker">
-        <div class="stat-icon stat-icon--purple">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M2 10a8 8 0 1 1 16 0 8 8 0 0 1-16 0zm9-5.5v3h3v2h-3v3H9v-3H6V7.5h3v-3h2z" fill="currentColor"/>
-          </svg>
-        </div>
-        <div>
-          <div class="stat-value" id="statDockerCount">-</div>
-          <div class="stat-label">Docker 컨테이너</div>
-        </div>
-      </div>
-      <div class="stat-card" id="statPorts">
-        <div class="stat-icon stat-icon--green">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12A6 6 0 0 1 10 4zm0 2a1 1 0 0 0-1 1v4l3 2 .75-1.25-2.25-1.5V7a1 1 0 0 0-1-1z" fill="currentColor"/>
-          </svg>
-        </div>
-        <div>
-          <div class="stat-value" id="statPortCount">-</div>
-          <div class="stat-label">총 매핑 포트</div>
-        </div>
-      </div>
-      <div class="stat-card" id="statEvents">
-        <div class="stat-icon stat-icon--orange">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M10 2a1 1 0 0 1 .894.553l7 14A1 1 0 0 1 17 18H3a1 1 0 0 1-.894-1.447l7-14A1 1 0 0 1 10 2zm0 3.618L4.764 16h10.472L10 5.618zM9 12V9h2v3H9zm0 2h2v2H9v-2z" fill="currentColor"/>
-          </svg>
-        </div>
-        <div>
-          <div class="stat-value" id="statEventCount">0</div>
-          <div class="stat-label">Docker 이벤트</div>
-        </div>
-      </div>
-    </section>
+  <button class="refresh-btn" onclick="load()">↻ 새로고침</button>
+  <p class="updated" id="updated"></p>
 
-    <!-- Filter / Search bar -->
-    <section class="filter-bar">
-      <div class="search-wrap">
-        <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" fill="currentColor"/>
-        </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="포트, 서비스, 컨테이너 이름으로 검색..." oninput="applyFilters()" />
-      </div>
-      <div class="filter-tabs" role="tablist">
-        <button class="filter-tab active" id="tabAll" onclick="setTab('all')" role="tab">전체</button>
-        <button class="filter-tab" id="tabDocker" onclick="setTab('docker')" role="tab">Docker</button>
-        <button class="filter-tab" id="tabSystem" onclick="setTab('system')" role="tab">시스템</button>
-      </div>
-      <div class="proto-filters">
-        <button class="proto-chip active" id="chipAll" onclick="setProto('all')">ALL</button>
-        <button class="proto-chip proto-chip--tcp" id="chipTcp" onclick="setProto('TCP')">TCP</button>
-        <button class="proto-chip proto-chip--udp" id="chipUdp" onclick="setProto('UDP')">UDP</button>
-      </div>
-    </section>
+  <script>
+    async function load() {
+      document.getElementById('subtitle').textContent = '확인 중...';
+      renderSkeleton();
+      const res = await fetch('/api/services');
+      const services = await res.json();
+      render(services);
+      const now = new Date().toLocaleTimeString('ko-KR');
+      document.getElementById('updated').textContent = `마지막 확인: ${now}`;
+      const up = services.filter(s => s.status === 'up').length;
+      document.getElementById('subtitle').textContent = `${up} / ${services.length} 서비스 정상`;
+    }
 
-    <!-- Content grid -->
-    <div class="content-grid">
-      <!-- Port table -->
-      <section class="card table-card">
-        <div class="card-header">
-          <h2 class="card-title">포트 목록</h2>
-          <span class="card-badge" id="tableCount">-</span>
-        </div>
-        <div class="table-wrap">
-          <table class="port-table" id="portTable">
-            <thead>
-              <tr>
-                <th onclick="sortTable('port')">포트 <span class="sort-arrow">↕</span></th>
-                <th onclick="sortTable('proto')">프로토콜</th>
-                <th onclick="sortTable('service')">서비스</th>
-                <th onclick="sortTable('type')">타입</th>
-                <th onclick="sortTable('name')">컨테이너 / 프로세스</th>
-                <th>상태</th>
-              </tr>
-            </thead>
-            <tbody id="portTableBody">
-              <tr><td colspan="6" class="empty-state">
-                <div class="spinner"></div>
-                <p>데이터 불러오는 중...</p>
-              </td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+    function renderSkeleton() {
+      // keep existing cards but set loading dots
+      document.querySelectorAll('.status-dot').forEach(d => {
+        d.className = 'status-dot loading';
+      });
+    }
 
-      <!-- Right panel -->
-      <aside class="right-panel">
-        <!-- Docker Containers -->
-        <section class="card">
-          <div class="card-header">
-            <h2 class="card-title">Docker 컨테이너</h2>
-            <span class="card-badge" id="containerCount">-</span>
-          </div>
-          <div id="containerList" class="container-list">
-            <div class="loading-placeholder">
-              <div class="spinner"></div>
+    function render(services) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = services.map(s => {
+        const isUp = s.status === 'up';
+        const ms = s.ms;
+        let latencyText = isUp ? `${ms}ms` : '응답없음';
+        let latencyClass = ms < 200 ? 'fast' : ms < 800 ? 'slow' : '';
+
+        return `
+          <div class="card">
+            <div class="card-top">
+              <span class="card-icon">${s.icon || '🔧'}</span>
+              <span class="status-dot ${s.status}"></span>
             </div>
-          </div>
-        </section>
-
-        <!-- Live Events -->
-        <section class="card events-card">
-          <div class="card-header">
-            <h2 class="card-title">실시간 Docker 이벤트</h2>
-            <div class="live-badge">
-              <span class="live-dot"></span>LIVE
+            <div class="card-name">${s.name}</div>
+            <div class="card-meta">
+              <span class="port-badge">:${s.port}</span>
+              <span class="latency ${latencyClass}">${latencyText}</span>
             </div>
+            <a href="${s.url}" target="_blank" class="go-btn ${isUp ? '' : 'disabled'}">
+              ${isUp ? '바로가기 →' : '오프라인'}
+            </a>
           </div>
-          <div id="eventFeed" class="event-feed">
-            <div class="event-empty">이벤트 대기 중...</div>
-          </div>
-        </section>
-      </aside>
-    </div>
-  </main>
+        `;
+      }).join('');
+    }
 
-  <!-- Toast notifications -->
-  <div id="toastContainer" class="toast-container"></div>
-
-  <script src="app.js"></script>
+    load();
+    setInterval(load, 30000);
+  </script>
 </body>
 </html>
