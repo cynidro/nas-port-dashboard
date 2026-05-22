@@ -1,0 +1,7 @@
+{
+  "port-dashboard":       { "exclude": true },
+  "tax-checker-backend":  { "exclude": true },
+  "tax-checker-frontend": { "icon": "💰", "name": "Tax Checker" },
+  "gomdori":              { "icon": "🏥", "name": "곰도리" },
+  "coupletask":           { "icon": "📝", "name": "CoupleTask" }
+}
