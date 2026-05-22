@@ -1,57 +1,62 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const https = require('https');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const DOCKER_SOCKET = '/var/run/docker.sock';
 
-app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── Load services ─────────────────────────────────────────────────────────
-function loadServices() {
-  try {
-    const raw = fs.readFileSync(path.join(__dirname, 'services.json'), 'utf-8');
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error('services.json 읽기 실패:', e.message);
-    return [];
-  }
-}
-
-// ─── Health check ──────────────────────────────────────────────────────────
-function checkService(service) {
-  return new Promise((resolve) => {
-    const url = new URL(service.url);
-    const lib = url.protocol === 'https:' ? https : http;
-    const start = Date.now();
-
-    const req = lib.request(
-      { hostname: url.hostname, port: url.port || (url.protocol === 'https:' ? 443 : 80),
-        path: url.pathname || '/', method: 'GET', timeout: 4000 },
+// Docker 소켓으로 컨테이너 목록 가져오기
+function getContainers() {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      { socketPath: DOCKER_SOCKET, path: '/containers/json?all=true', method: 'GET', headers: { Host: 'localhost' } },
       (res) => {
-        const ms = Date.now() - start;
-        req.destroy();
-        resolve({ ...service, status: 'up', ms });
+        let data = '';
+        res.on('data', (c) => (data += c));
+        res.on('end', () => {
+          try { resolve(JSON.parse(data)); }
+          catch (e) { reject(e); }
+        });
       }
     );
-
-    req.on('timeout', () => { req.destroy(); resolve({ ...service, status: 'down', ms: null }); });
-    req.on('error', () => resolve({ ...service, status: 'down', ms: null }));
+    req.on('error', reject);
     req.end();
   });
 }
 
-// ─── API ────────────────────────────────────────────────────────────────────
 app.get('/api/services', async (req, res) => {
-  const services = loadServices();
-  const results = await Promise.all(services.map(checkService));
-  res.json(results);
+  try {
+    const containers = await getContainers();
+    const services = [];
+
+    for (const c of containers) {
+      const name = (c.Names?.[0] || '').replace(/^\//, '');
+      const running = c.State === 'running';
+
+      // 호스트에 열린 포트만
+      const ports = (c.Ports || [])
+        .filter(p => p.PublicPort)
+        .map(p => p.PublicPort);
+
+      if (ports.length === 0) continue; // 포트 없으면 표시 안 함
+
+      services.push({
+        name,
+        image: (c.Image || '').split(':')[0],
+        ports,
+        state: c.State,
+        running,
+      });
+    }
+
+    res.json(services);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`\n🚀 Dashboard → http://localhost:${PORT}\n`);
-});
+app.listen(PORT, () => console.log(`http://localhost:${PORT}`));

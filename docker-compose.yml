@@ -4,9 +4,9 @@ services:
     container_name: port-dashboard
     restart: unless-stopped
     ports:
-      - "3001:3001"       # ← 원하는 포트로 바꾸세요
+      - "3001:3001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - PORT=3001
       - TZ=Asia/Seoul
-    volumes:
-      - ./services.json:/app/services.json  # 서비스 목록 (컨테이너 재시작 없이 수정 가능)

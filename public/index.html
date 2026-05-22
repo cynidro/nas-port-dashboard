@@ -19,41 +19,27 @@
 
     header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 36px;
     }
-    header h1 {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin-bottom: 4px;
-    }
-    header p {
-      font-size: 0.8rem;
-      color: #475569;
-    }
+    h1 { font-size: 1.3rem; font-weight: 600; margin-bottom: 4px; }
+    #subtitle { font-size: 0.78rem; color: #475569; }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
       max-width: 900px;
       margin: 0 auto;
     }
 
     .card {
-      background: #1a1f2e;
+      background: #161b27;
       border: 1px solid #1e293b;
-      border-radius: 14px;
-      padding: 22px 20px;
+      border-radius: 12px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      transition: transform 0.15s, border-color 0.15s;
-      text-decoration: none;
-    }
-    .card:hover {
-      transform: translateY(-3px);
-      border-color: #334155;
+      gap: 10px;
     }
 
     .card-top {
@@ -61,68 +47,70 @@
       align-items: center;
       justify-content: space-between;
     }
-    .card-icon {
-      font-size: 1.8rem;
-      line-height: 1;
+    .card-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 130px;
     }
-    .status-dot {
-      width: 10px; height: 10px;
+    .dot {
+      width: 8px; height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .status-dot.up   { background: #22c55e; box-shadow: 0 0 8px #22c55e88; }
-    .status-dot.down { background: #ef4444; }
-    .status-dot.loading { background: #475569; animation: blink 1s infinite; }
+    .dot.up   { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+    .dot.down { background: #ef4444; }
 
-    @keyframes blink { 50% { opacity: 0.3; } }
-
-    .card-name {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #f1f5f9;
+    .image-name {
+      font-size: 0.72rem;
+      color: #334155;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .card-meta {
+    /* 포트 링크 목록 */
+    .ports { display: flex; flex-direction: column; gap: 5px; }
+
+    .port-link {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.75rem;
-    }
-    .port-badge {
-      background: #0f172a;
+      padding: 7px 10px;
+      background: #0f1117;
       border: 1px solid #1e293b;
-      color: #64748b;
-      padding: 3px 9px;
-      border-radius: 6px;
-      font-family: monospace;
-      font-size: 0.78rem;
-    }
-    .latency {
-      color: #475569;
-      font-size: 0.72rem;
-    }
-    .latency.fast { color: #22c55e; }
-    .latency.slow { color: #f59e0b; }
-
-    .go-btn {
-      display: block;
-      text-align: center;
-      padding: 9px;
-      background: #1e293b;
-      border-radius: 8px;
-      color: #94a3b8;
-      font-size: 0.8rem;
-      font-weight: 500;
+      border-radius: 7px;
       text-decoration: none;
-      transition: background 0.15s, color 0.15s;
+      transition: border-color 0.15s, background 0.15s;
     }
-    .card:hover .go-btn {
-      background: #6366f1;
-      color: white;
+    .port-link:hover {
+      border-color: #6366f1;
+      background: #1e1b4b22;
     }
-    .go-btn.disabled {
-      opacity: 0.3;
-      pointer-events: none;
+    .port-num {
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #6366f1;
+      font-weight: 600;
+    }
+    .go {
+      font-size: 0.72rem;
+      color: #475569;
+    }
+    .port-link:hover .go { color: #818cf8; }
+
+    /* 오프라인 */
+    .offline-badge {
+      font-size: 0.72rem;
+      color: #ef4444;
+      padding: 7px 10px;
+      background: #0f1117;
+      border: 1px solid #1e293b;
+      border-radius: 7px;
+      text-align: center;
     }
 
     .refresh-btn {
@@ -142,67 +130,66 @@
 
     .updated {
       text-align: center;
-      font-size: 0.7rem;
-      color: #334155;
+      font-size: 0.68rem;
+      color: #1e293b;
       margin-top: 10px;
+    }
+
+    .error {
+      text-align: center;
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-top: 40px;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>🏠 서비스 현황</h1>
-    <p id="subtitle">확인 중...</p>
+    <p id="subtitle">불러오는 중...</p>
   </header>
 
-  <div class="grid" id="grid">
-    <!-- cards rendered by JS -->
-  </div>
-
+  <div class="grid" id="grid"></div>
   <button class="refresh-btn" onclick="load()">↻ 새로고침</button>
   <p class="updated" id="updated"></p>
 
   <script>
-    async function load() {
-      document.getElementById('subtitle').textContent = '확인 중...';
-      renderSkeleton();
-      const res = await fetch('/api/services');
-      const services = await res.json();
-      render(services);
-      const now = new Date().toLocaleTimeString('ko-KR');
-      document.getElementById('updated').textContent = `마지막 확인: ${now}`;
-      const up = services.filter(s => s.status === 'up').length;
-      document.getElementById('subtitle').textContent = `${up} / ${services.length} 서비스 정상`;
-    }
+    const host = window.location.hostname; // NAS IP 자동 감지
 
-    function renderSkeleton() {
-      // keep existing cards but set loading dots
-      document.querySelectorAll('.status-dot').forEach(d => {
-        d.className = 'status-dot loading';
-      });
+    async function load() {
+      try {
+        const res = await fetch('/api/services');
+        if (!res.ok) throw new Error(await res.text());
+        const services = await res.json();
+        render(services);
+        const up = services.filter(s => s.running).length;
+        document.getElementById('subtitle').textContent = `${up} / ${services.length} 실행 중`;
+        document.getElementById('updated').textContent = `마지막 확인: ${new Date().toLocaleTimeString('ko-KR')}`;
+      } catch (e) {
+        document.getElementById('grid').innerHTML = `<p class="error">Docker 소켓 연결 실패<br><small>${e.message}</small></p>`;
+        document.getElementById('subtitle').textContent = '오류';
+      }
     }
 
     function render(services) {
-      const grid = document.getElementById('grid');
-      grid.innerHTML = services.map(s => {
-        const isUp = s.status === 'up';
-        const ms = s.ms;
-        let latencyText = isUp ? `${ms}ms` : '응답없음';
-        let latencyClass = ms < 200 ? 'fast' : ms < 800 ? 'slow' : '';
+      document.getElementById('grid').innerHTML = services.map(s => {
+        const portLinks = s.ports.map(port =>
+          `<a class="port-link" href="http://${host}:${port}" target="_blank">
+            <span class="port-num">:${port}</span>
+            <span class="go">바로가기 →</span>
+          </a>`
+        ).join('');
 
         return `
           <div class="card">
             <div class="card-top">
-              <span class="card-icon">${s.icon || '🔧'}</span>
-              <span class="status-dot ${s.status}"></span>
+              <span class="card-name" title="${s.name}">${s.name}</span>
+              <span class="dot ${s.running ? 'up' : 'down'}"></span>
             </div>
-            <div class="card-name">${s.name}</div>
-            <div class="card-meta">
-              <span class="port-badge">:${s.port}</span>
-              <span class="latency ${latencyClass}">${latencyText}</span>
+            <div class="image-name">${s.image}</div>
+            <div class="ports">
+              ${s.running ? portLinks : '<div class="offline-badge">오프라인</div>'}
             </div>
-            <a href="${s.url}" target="_blank" class="go-btn ${isUp ? '' : 'disabled'}">
-              ${isUp ? '바로가기 →' : '오프라인'}
-            </a>
           </div>
         `;
       }).join('');
