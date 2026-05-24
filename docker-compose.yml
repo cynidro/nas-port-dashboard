@@ -6,7 +6,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./labels.json:/app/labels.json   # 아이콘/이름/제외 설정
     environment:
       - PORT=3001

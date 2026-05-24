@@ -197,6 +197,137 @@
     .btn-save   { background: #6366f1; color: white; }
     .btn-hide   { background: #1e293b; color: #64748b; }
     .btn-cancel { background: transparent; color: #475569; border: 1px solid #1e293b; }
+
+    /* ── 앱 포트 표시 ── */
+    .app-port {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: #64748b;
+      font-family: monospace;
+      margin-top: -3px;
+    }
+
+    /* ── 액션 시트 (iOS 스타일 바텀 시트) ── */
+    .sheet-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 110;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .sheet-overlay.show {
+      display: flex;
+    }
+
+    .sheet {
+      background: #1a1f2e;
+      border: 1px solid #1e293b;
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 24px 34px;
+      animation: sheetUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    }
+    @keyframes sheetUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .sheet-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #1e293b;
+      margin-bottom: 16px;
+    }
+    .sheet-icon {
+      font-size: 2.8rem;
+      width: 72px;
+      height: 72px;
+      background: #10141f;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sheet-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .sheet-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+    .sheet-desc {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-family: monospace;
+    }
+
+    .sheet-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sheet-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .sheet-btn:active {
+      transform: scale(0.98);
+    }
+    .sheet-btn-primary {
+      background: #6366f1;
+      color: white;
+    }
+    .sheet-btn-primary:hover {
+      background: #4f46e5;
+    }
+    .sheet-btn-secondary {
+      background: #242b3d;
+      color: #cbd5e1;
+      border: 1px solid #2e374d;
+    }
+    .sheet-btn-secondary:hover {
+      background: #2e374d;
+    }
+    .sheet-btn-danger {
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #991b1b;
+    }
+    .sheet-btn-danger:hover {
+      background: #991b1b;
+      color: white;
+    }
+    .sheet-btn-cancel {
+      background: transparent;
+      color: #64748b;
+      border: 1px solid #1e293b;
+      margin-top: 4px;
+    }
+    .sheet-btn-cancel:hover {
+      background: #161b26;
+    }
   </style>
 </head>
 <body>
@@ -219,10 +350,38 @@
         <input id="nameInput" type="text" placeholder="서비스 이름" />
       </div>
 
-      <div class="modal-btns">
-        <button class="btn btn-save"   onclick="saveLabel()">저장</button>
-        <button class="btn btn-hide"   onclick="hideService()">숨기기</button>
-        <button class="btn btn-cancel" onclick="closeModal()">취소</button>
+      <div class="modal-btns" style="flex-wrap: wrap;">
+        <button class="btn btn-save"   onclick="saveLabel()" style="flex: 1;">저장</button>
+        <button class="btn btn-hide"   onclick="hideService()" style="flex: 1;">숨기기</button>
+        <button class="btn btn-cancel" onclick="closeModal()" style="flex: 1;">취소</button>
+        <button class="btn" onclick="deleteContainerFromModal()" style="flex-basis: 100%; margin-top: 8px; background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b;">도커 컨테이너 종료 및 삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 액션 시트 (바텀 시트) -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+    <div class="sheet">
+      <div class="sheet-header">
+        <div class="sheet-icon" id="sheetIcon">❓</div>
+        <div class="sheet-info">
+          <div class="sheet-title" id="sheetTitle">서비스 이름</div>
+          <div class="sheet-desc" id="sheetDesc">rawName • :0000</div>
+        </div>
+      </div>
+      <div class="sheet-btns">
+        <button class="sheet-btn sheet-btn-primary" id="sheetOpenBtn" onclick="openServiceFromSheet()">
+          🔗 서비스 바로가기
+        </button>
+        <button class="sheet-btn sheet-btn-secondary" onclick="editServiceFromSheet()">
+          ⚙️ 이름 및 이모지 설정
+        </button>
+        <button class="sheet-btn sheet-btn-danger" onclick="deleteServiceFromSheet()">
+          🗑️ 도커 컨테이너 종료 및 삭제
+        </button>
+        <button class="sheet-btn sheet-btn-cancel" onclick="closeSheet()">
+          취소
+        </button>
       </div>
     </div>
   </div>
@@ -230,6 +389,10 @@
   <script>
     const nas = window.location.hostname;
     let currentRaw = null;
+    let currentId = null;
+    let activeService = null;
+    let longPressTimer = null;
+    let isLongPress = false;
 
     async function load() {
       try {
@@ -246,43 +409,117 @@
 
     function render(services) {
       document.getElementById('grid').innerHTML = services.map(s => {
+        const dataAttrs = `data-id="${s.id}" data-rawname="${s.rawName}" data-name="${s.name}" data-icon="${s.icon}" data-port="${s.port}" data-running="${s.running}" data-configured="${s.configured}"`;
+
         if (!s.configured) {
-          // 미설정 → 점선 카드, 클릭하면 모달
           return `
-            <div class="app" onclick="openModal('${s.rawName}')">
+            <div class="app card-item" ${dataAttrs}>
               <div class="icon-wrap unconfigured">
                 ${s.icon}
                 <span class="setup-badge">설정하기</span>
                 <span class="dot ${s.running ? 'up' : 'down'}"></span>
               </div>
               <span class="app-name dim">${s.name}</span>
+              <span class="app-port">:${s.port}</span>
             </div>`;
         }
-        // 설정된 서비스 → 바로가기 링크
         return `
-          <a class="app" href="http://${nas}:${s.port}" target="_blank">
+          <a class="app card-item" href="http://${nas}:${s.port}" target="_blank" ${dataAttrs}>
             <div class="icon-wrap">
               ${s.icon}
               <span class="dot ${s.running ? 'up' : 'down'}"></span>
             </div>
             <span class="app-name">${s.name}</span>
+            <span class="app-port">:${s.port}</span>
           </a>`;
       }).join('');
+
+      bindCardEvents();
+    }
+
+    function bindCardEvents() {
+      const cards = document.querySelectorAll('.card-item');
+      cards.forEach(card => {
+        // 1. 우클릭 방지 및 우클릭 시 액션 시트 열기
+        card.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          const id = card.getAttribute('data-id');
+          const rawName = card.getAttribute('data-rawname');
+          const name = card.getAttribute('data-name');
+          const icon = card.getAttribute('data-icon');
+          const port = card.getAttribute('data-port');
+          const running = card.getAttribute('data-running') === 'true';
+          const configured = card.getAttribute('data-configured') === 'true';
+          openActionSheet({ id, rawName, name, icon, port, running, configured });
+        });
+
+        // 2. 모바일 터치 길게 누르기 지원
+        card.addEventListener('touchstart', () => {
+          isLongPress = false;
+          longPressTimer = setTimeout(() => {
+            isLongPress = true;
+            const id = card.getAttribute('data-id');
+            const rawName = card.getAttribute('data-rawname');
+            const name = card.getAttribute('data-name');
+            const icon = card.getAttribute('data-icon');
+            const port = card.getAttribute('data-port');
+            const running = card.getAttribute('data-running') === 'true';
+            const configured = card.getAttribute('data-configured') === 'true';
+            openActionSheet({ id, rawName, name, icon, port, running, configured });
+          }, 600);
+        }, { passive: true });
+
+        card.addEventListener('touchend', (e) => {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+          }
+          if (isLongPress) {
+            e.preventDefault();
+          }
+        });
+
+        card.addEventListener('touchmove', () => {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+          }
+        }, { passive: true });
+
+        // 3. 일반 클릭 제어 (미설정인 경우 설정창 열기)
+        card.addEventListener('click', (e) => {
+          if (isLongPress) {
+            e.preventDefault();
+            isLongPress = false;
+            return;
+          }
+          const configured = card.getAttribute('data-configured') === 'true';
+          if (!configured) {
+            e.preventDefault();
+            const rawName = card.getAttribute('data-rawname');
+            const id = card.getAttribute('data-id');
+            const name = card.getAttribute('data-name');
+            const icon = card.getAttribute('data-icon');
+            openModal(rawName, id, name, icon);
+          }
+        });
+      });
     }
 
     // ── 모달 ──────────────────────────────────
-    function openModal(rawName) {
+    function openModal(rawName, id, currentName = '', currentEmoji = '') {
       currentRaw = rawName;
+      currentId = id;
       document.getElementById('modalRaw').textContent   = rawName;
-      document.getElementById('emojiInput').value = '';
-      document.getElementById('nameInput').value  = rawName;
+      document.getElementById('emojiInput').value = currentEmoji === '❓' ? '' : currentEmoji;
+      document.getElementById('nameInput').value  = currentName || rawName;
       document.getElementById('overlay').classList.add('show');
       document.getElementById('emojiInput').focus();
     }
+
     function closeModal(e) {
       if (e && e.target !== document.getElementById('overlay')) return;
       document.getElementById('overlay').classList.remove('show');
       currentRaw = null;
+      currentId = null;
     }
 
     async function saveLabel() {
@@ -305,6 +542,83 @@
       });
       document.getElementById('overlay').classList.remove('show');
       load();
+    }
+
+    // ── 액션 시트 ──────────────────────────────────
+    function openActionSheet(s) {
+      activeService = s;
+      document.getElementById('sheetIcon').textContent = s.icon;
+      document.getElementById('sheetTitle').textContent = s.name;
+      document.getElementById('sheetDesc').textContent = `${s.rawName} • :${s.port}`;
+      
+      const openBtn = document.getElementById('sheetOpenBtn');
+      if (s.running) {
+        openBtn.style.display = 'flex';
+      } else {
+        openBtn.style.display = 'none';
+      }
+
+      document.getElementById('sheetOverlay').classList.add('show');
+    }
+
+    function closeSheet(e) {
+      if (e && e.target !== document.getElementById('sheetOverlay')) return;
+      document.getElementById('sheetOverlay').classList.remove('show');
+      activeService = null;
+    }
+
+    function openServiceFromSheet() {
+      if (activeService) {
+        window.open(`http://${nas}:${activeService.port}`, '_blank');
+        closeSheet();
+      }
+    }
+
+    function editServiceFromSheet() {
+      if (activeService) {
+        const s = activeService;
+        closeSheet();
+        openModal(s.rawName, s.id, s.name, s.icon);
+      }
+    }
+
+    async function deleteServiceFromSheet() {
+      if (!activeService) return;
+      const confirmMsg = `⚠️ 경고: [${activeService.name}] (포트 :${activeService.port}) 컨테이너를 정말로 강제 종료하고 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`;
+      if (confirm(confirmMsg)) {
+        const id = activeService.id;
+        const rawName = activeService.rawName;
+        closeSheet();
+        await deleteContainerAPI(id, rawName);
+      }
+    }
+
+    async function deleteContainerFromModal() {
+      if (!currentRaw) return;
+      const confirmMsg = `⚠️ 경고: [${currentRaw}] 컨테이너를 정말로 강제 종료하고 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`;
+      if (confirm(confirmMsg)) {
+        const id = currentId;
+        const rawName = currentRaw;
+        closeModal();
+        await deleteContainerAPI(id, rawName);
+      }
+    }
+
+    async function deleteContainerAPI(id, rawName) {
+      try {
+        const res = await fetch(`/api/containers/${id}?rawName=${encodeURIComponent(rawName)}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('컨테이너가 성공적으로 종료 및 삭제되었습니다.');
+          load();
+        } else {
+          alert(`삭제 실패: ${data.error}`);
+        }
+      } catch (err) {
+        alert(`네트워크 오류: ${err.message}`);
+      }
     }
 
     load();

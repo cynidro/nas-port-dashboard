@@ -36,6 +36,32 @@ function getContainers() {
   });
 }
 
+function deleteContainer(id) {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      {
+        socketPath: DOCKER_SOCKET,
+        path: `/containers/${id}?v=true&force=true`,
+        method: 'DELETE',
+        headers: { Host: 'localhost' }
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (c) => (data += c));
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Docker API Error (${res.statusCode}): ${data || res.statusMessage}`));
+          }
+        });
+      }
+    );
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 // 서비스 목록
 app.get('/api/services', async (req, res) => {
   try {
@@ -58,6 +84,7 @@ app.get('/api/services', async (req, res) => {
       const configured = !!(label?.icon && label?.name);
 
       services.push({
+        id:           c.Id.substring(0, 12),
         rawName,
         name:         label?.name || rawName,
         icon:         label?.icon || '❓',
@@ -68,6 +95,27 @@ app.get('/api/services', async (req, res) => {
     }
 
     res.json(services);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 컨테이너 종료 및 삭제
+app.delete('/api/containers/:id', async (req, res) => {
+  const { id } = req.params;
+  const { rawName } = req.query;
+  try {
+    await deleteContainer(id);
+
+    if (rawName) {
+      const labels = loadLabels();
+      if (labels[rawName]) {
+        delete labels[rawName];
+        saveLabels(labels);
+      }
+    }
+
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -89,3 +137,4 @@ app.post('/api/labels', (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+
