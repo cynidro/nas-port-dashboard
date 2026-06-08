@@ -3,115 +3,264 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>홈</title>
+  <title>홈 서버</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg:           #0b0e17;
+      --surface:      #111827;
+      --surface2:     #1a2236;
+      --border:       #1e2d45;
+      --border2:      #2a3a55;
+      --text:         #e2e8f0;
+      --text-muted:   #6b7fa3;
+      --text-dim:     #3a4a65;
+      --accent:       #6366f1;
+      --accent-hover: #4f46e5;
+      --green:        #22c55e;
+      --red:          #ef4444;
+      --mono:         'JetBrains Mono', monospace;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
-      background: #0f1117;
-      color: #e2e8f0;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 48px 24px;
+      padding: 40px 24px 80px;
     }
 
-    h1 {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: #334155;
-      letter-spacing: 0.1em;
+    /* ── 헤더 ── */
+    header {
+      max-width: 900px;
+      margin: 0 auto 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      margin-bottom: 32px;
+    }
+    .header-time {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
     }
 
+    /* ── 카드 그리드 ── */
     .grid {
+      max-width: 900px;
+      margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(3, 100px);
-      gap: 20px;
-    }
-    @media (max-width: 380px) {
-      .grid { grid-template-columns: repeat(2, 100px); }
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
     }
 
-    /* ── 앱 카드 ── */
-    .app {
+    /* ── 서비스 카드 (Homer/Dashy 스타일 가로형) ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
+      align-items: flex-start;
+      gap: 16px;
       text-decoration: none;
-      -webkit-tap-highlight-color: transparent;
       cursor: pointer;
+      position: relative;
+      transition: border-color 0.18s, background 0.18s, transform 0.12s, box-shadow 0.18s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      overflow: hidden;
     }
-    .icon-wrap {
-      width: 100px;
-      height: 100px;
-      border-radius: 22px;
-      background: #1a1f2e;
-      border: 1px solid #1e293b;
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .card:hover {
+      border-color: var(--border2);
+      background: var(--surface2);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .card:hover::before { opacity: 1; }
+    .card:active { transform: scale(0.985); }
+
+    /* 미설정 카드 */
+    .card.unconfigured {
+      border-style: dashed;
+      border-color: #243047;
+      background: rgba(17, 24, 39, 0.5);
+    }
+    .card.unconfigured:hover { border-color: var(--accent); }
+
+    /* ── 카드 아이콘 영역 ── */
+    .card-icon {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      border-radius: 13px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.6rem;
+      font-size: 1.7rem;
       position: relative;
-      transition: transform 0.12s, box-shadow 0.12s;
-      user-select: none;
+      flex-shrink: 0;
     }
-    .app:active .icon-wrap { transform: scale(0.93); }
-    .app:hover .icon-wrap  { box-shadow: 0 8px 24px rgba(0,0,0,0.4); border-color: #2d3748; }
-
-    /* 미설정 카드 - 점선 테두리 */
-    .icon-wrap.unconfigured {
+    .card.unconfigured .card-icon {
+      background: transparent;
       border-style: dashed;
-      border-color: #334155;
-      background: #13182200;
-    }
-    /* 설정하기 뱃지 */
-    .setup-badge {
-      position: absolute;
-      bottom: -6px;
-      background: #6366f1;
-      color: white;
-      font-size: 0.55rem;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 999px;
-      white-space: nowrap;
-      letter-spacing: 0.04em;
+      border-color: #2a3a55;
     }
 
     /* 상태 점 */
     .dot {
       position: absolute;
-      top: 7px; right: 7px;
-      width: 9px; height: 9px;
+      bottom: -3px; right: -3px;
+      width: 10px; height: 10px;
       border-radius: 50%;
-      border: 2px solid #1a1f2e;
+      border: 2px solid var(--surface);
     }
-    .dot.up   { background: #22c55e; }
-    .dot.down { background: #ef4444; }
+    .dot.up   { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+    .dot.down { background: var(--red); }
 
-    .app-name {
-      font-size: 0.72rem;
-      font-weight: 500;
-      color: #94a3b8;
-      text-align: center;
+    /* ── 카드 본문 ── */
+    .card-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 100px;
     }
-    .app-name.dim { color: #475569; }
-
-    .updated {
-      margin-top: 40px;
+    .card.unconfigured .card-name { color: var(--text-muted); }
+    .card-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .badge-port {
+      font-family: var(--mono);
       font-size: 0.65rem;
-      color: #1e293b;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 7px;
+    }
+    .badge-setup {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: white;
+      background: var(--accent);
+      border-radius: 5px;
+      padding: 2px 7px;
+      letter-spacing: 0.03em;
+    }
+
+    /* 더보기 버튼 (⋮) */
+    .card-menu-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .card:hover .card-menu-btn,
+    .card.unconfigured .card-menu-btn { opacity: 1; }
+    .card-menu-btn:hover {
+      background: var(--surface2);
+      border-color: var(--border2);
+      color: var(--text);
+    }
+
+    /* ── 업데이트 정보 영역 ── */
+    .card-meta {
+      margin-top: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .meta-git {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .meta-hash {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--accent);
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 4px;
+      padding: 1px 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .meta-msg {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .meta-time {
+      font-size: 0.64rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .meta-time .label {
+      color: var(--text-dim);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.62rem;
+    }
+    /* Git 없음 - 배포시간만 */
+    .meta-deploy {
+      font-size: 0.67rem;
+      color: var(--text-dim);
+    }
+    .meta-deploy .val {
+      color: var(--text-muted);
+      font-family: var(--mono);
     }
 
     /* ── 설정 모달 ── */
@@ -119,8 +268,8 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(6px);
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
       z-index: 100;
       align-items: flex-end;
       justify-content: center;
@@ -128,10 +277,10 @@
     .overlay.show { display: flex; }
 
     .modal {
-      background: #1a1f2e;
-      border: 1px solid #1e293b;
-      border-radius: 20px 20px 0 0;
-      padding: 28px 24px 36px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 22px 22px 0 0;
+      padding: 28px 24px 40px;
       width: 100%;
       max-width: 480px;
       animation: slideUp 0.22s ease-out;
@@ -140,10 +289,9 @@
       from { transform: translateY(40px); opacity: 0; }
       to   { transform: translateY(0);    opacity: 1; }
     }
-
     .modal-title {
-      font-size: 0.75rem;
-      color: #475569;
+      font-size: 0.7rem;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.1em;
       margin-bottom: 4px;
@@ -153,34 +301,34 @@
       font-weight: 600;
       color: #f1f5f9;
       margin-bottom: 20px;
-      font-family: monospace;
+      font-family: var(--mono);
     }
-
     .field { margin-bottom: 14px; }
     .field label {
       display: block;
-      font-size: 0.72rem;
-      color: #475569;
+      font-size: 0.7rem;
+      color: var(--text-muted);
       margin-bottom: 5px;
     }
     .field input {
       width: 100%;
       padding: 10px 12px;
-      background: #0f1117;
-      border: 1px solid #1e293b;
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 10px;
       color: #f1f5f9;
       font-size: 0.88rem;
       font-family: 'Inter', sans-serif;
       outline: none;
     }
-    .field input:focus { border-color: #6366f1; }
+    .field input:focus { border-color: var(--accent); }
     #emojiInput { font-size: 1.6rem; text-align: center; }
 
     .modal-btns {
       display: flex;
       gap: 8px;
       margin-top: 18px;
+      flex-wrap: wrap;
     }
     .btn {
       flex: 1;
@@ -194,153 +342,123 @@
       transition: opacity 0.15s;
     }
     .btn:active { opacity: 0.8; }
-    .btn-save   { background: #6366f1; color: white; }
-    .btn-hide   { background: #1e293b; color: #64748b; }
-    .btn-cancel { background: transparent; color: #475569; border: 1px solid #1e293b; }
-
-    /* ── 앱 포트 표시 ── */
-    .app-port {
-      font-size: 0.65rem;
-      font-weight: 500;
-      color: #64748b;
-      font-family: monospace;
-      margin-top: -3px;
+    .btn-save   { background: var(--accent); color: white; }
+    .btn-hide   { background: var(--border); color: var(--text-muted); }
+    .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-danger {
+      flex-basis: 100%;
+      margin-top: 4px;
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #991b1b;
     }
 
-    /* ── 액션 시트 (iOS 스타일 바텀 시트) ── */
+    /* ── 액션 시트 ── */
     .sheet-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
       z-index: 110;
       align-items: flex-end;
       justify-content: center;
     }
-    .sheet-overlay.show {
-      display: flex;
-    }
+    .sheet-overlay.show { display: flex; }
 
     .sheet {
-      background: #1a1f2e;
-      border: 1px solid #1e293b;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
       border-radius: 24px 24px 0 0;
       width: 100%;
       max-width: 480px;
-      padding: 24px 24px 34px;
+      padding: 24px 24px 40px;
       animation: sheetUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 -12px 40px rgba(0,0,0,0.6);
     }
     @keyframes sheetUp {
       from { transform: translateY(100%); }
       to   { transform: translateY(0); }
     }
-
     .sheet-header {
       display: flex;
       align-items: center;
       gap: 16px;
       padding-bottom: 20px;
-      border-bottom: 1px solid #1e293b;
+      border-bottom: 1px solid var(--border);
       margin-bottom: 16px;
     }
     .sheet-icon {
-      font-size: 2.8rem;
-      width: 72px;
-      height: 72px;
-      background: #10141f;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
+      font-size: 2.4rem;
+      width: 64px;
+      height: 64px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
-    .sheet-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .sheet-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
+    .sheet-info { flex: 1; min-width: 0; }
+    .sheet-title { font-size: 1.05rem; font-weight: 600; color: #f1f5f9; }
     .sheet-desc {
-      font-size: 0.75rem;
-      color: #64748b;
-      font-family: monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      margin-top: 3px;
     }
-
-    .sheet-btns {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .sheet-btns { display: flex; flex-direction: column; gap: 8px; }
     .sheet-btn {
       width: 100%;
-      padding: 14px;
-      border-radius: 14px;
+      padding: 13px 16px;
+      border-radius: 12px;
       border: none;
       font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
+      gap: 10px;
       transition: background 0.15s, transform 0.1s;
+      text-align: left;
     }
-    .sheet-btn:active {
-      transform: scale(0.98);
-    }
-    .sheet-btn-primary {
-      background: #6366f1;
-      color: white;
-    }
-    .sheet-btn-primary:hover {
-      background: #4f46e5;
-    }
-    .sheet-btn-secondary {
-      background: #242b3d;
-      color: #cbd5e1;
-      border: 1px solid #2e374d;
-    }
-    .sheet-btn-secondary:hover {
-      background: #2e374d;
-    }
-    .sheet-btn-danger {
-      background: #7f1d1d;
-      color: #fca5a5;
-      border: 1px solid #991b1b;
-    }
-    .sheet-btn-danger:hover {
-      background: #991b1b;
-      color: white;
-    }
-    .sheet-btn-cancel {
-      background: transparent;
-      color: #64748b;
-      border: 1px solid #1e293b;
-      margin-top: 4px;
-    }
-    .sheet-btn-cancel:hover {
-      background: #161b26;
+    .sheet-btn:active { transform: scale(0.985); }
+    .sheet-btn-primary  { background: var(--accent); color: white; }
+    .sheet-btn-primary:hover { background: var(--accent-hover); }
+    .sheet-btn-secondary { background: #1e2d45; color: #cbd5e1; border: 1px solid var(--border2); }
+    .sheet-btn-secondary:hover { background: #243350; }
+    .sheet-btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+    .sheet-btn-danger:hover { background: #991b1b; color: white; }
+    .sheet-btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border); margin-top: 4px; justify-content: center; }
+    .sheet-btn-cancel:hover { background: #161d2e; }
+
+    /* ── 하단 갱신 시간 ── */
+    .footer {
+      max-width: 900px;
+      margin: 28px auto 0;
+      text-align: right;
+      font-size: 0.62rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
     }
   </style>
 </head>
 <body>
-  <h1>서비스</h1>
+  <header>
+    <div class="header-title">서비스</div>
+    <div class="header-time" id="headerTime">—</div>
+  </header>
+
   <div class="grid" id="grid"></div>
-  <p class="updated" id="updated"></p>
+  <div class="footer" id="footer"></div>
 
   <!-- 설정 모달 -->
   <div class="overlay" id="overlay" onclick="closeModal(event)">
     <div class="modal">
       <div class="modal-title">새 서비스 발견됨</div>
       <div class="modal-raw" id="modalRaw"></div>
-
       <div class="field">
         <label>이모지</label>
         <input id="emojiInput" type="text" maxlength="4" placeholder="🔧" />
@@ -349,17 +467,16 @@
         <label>표시 이름</label>
         <input id="nameInput" type="text" placeholder="서비스 이름" />
       </div>
-
-      <div class="modal-btns" style="flex-wrap: wrap;">
-        <button class="btn btn-save"   onclick="saveLabel()" style="flex: 1;">저장</button>
-        <button class="btn btn-hide"   onclick="hideService()" style="flex: 1;">숨기기</button>
-        <button class="btn btn-cancel" onclick="closeModal()" style="flex: 1;">취소</button>
-        <button class="btn" onclick="deleteContainerFromModal()" style="flex-basis: 100%; margin-top: 8px; background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b;">도커 컨테이너 종료 및 삭제</button>
+      <div class="modal-btns">
+        <button class="btn btn-save"   onclick="saveLabel()">저장</button>
+        <button class="btn btn-hide"   onclick="hideService()">숨기기</button>
+        <button class="btn btn-cancel" onclick="closeModal()">취소</button>
+        <button class="btn btn-danger" onclick="deleteContainerFromModal()">🗑️ 도커 컨테이너 종료 및 삭제</button>
       </div>
     </div>
   </div>
 
-  <!-- 액션 시트 (바텀 시트) -->
+  <!-- 액션 시트 -->
   <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
     <div class="sheet">
       <div class="sheet-header">
@@ -379,9 +496,7 @@
         <button class="sheet-btn sheet-btn-danger" onclick="deleteServiceFromSheet()">
           🗑️ 도커 컨테이너 종료 및 삭제
         </button>
-        <button class="sheet-btn sheet-btn-cancel" onclick="closeSheet()">
-          취소
-        </button>
+        <button class="sheet-btn sheet-btn-cancel" onclick="closeSheet()">취소</button>
       </div>
     </div>
   </div>
@@ -394,134 +509,187 @@
     let longPressTimer = null;
     let isLongPress = false;
 
+    // ── 상대 시간 ───────────────────────────────────────────
+    function timeAgo(isoDate) {
+      if (!isoDate) return null;
+      const diff = Date.now() - new Date(isoDate).getTime();
+      const sec  = Math.floor(diff / 1000);
+      const min  = Math.floor(sec / 60);
+      const hr   = Math.floor(min / 60);
+      const day  = Math.floor(hr / 24);
+      if (sec < 60)   return `${sec}초 전`;
+      if (min < 60)   return `${min}분 전`;
+      if (hr  < 24)   return `${hr}시간 전`;
+      if (day < 30)   return `${day}일 전`;
+      return new Date(isoDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    }
+
+    function fmtDatetime(isoDate) {
+      if (!isoDate) return '';
+      const d = new Date(isoDate);
+      return d.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) + ' ' +
+             d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    // ── 카드 HTML 생성 ────────────────────────────────────────
+    function buildUpdateMeta(s) {
+      if (s.git) {
+        const ago  = timeAgo(s.git.date);
+        const when = fmtDatetime(s.git.date);
+        return `
+          <div class="meta-git">
+            <span class="meta-hash">${s.git.hash}</span>
+            <span class="meta-msg" title="${escHtml(s.git.message)}">${escHtml(s.git.message)}</span>
+          </div>
+          <div class="meta-time"><span class="label">최종 커밋</span> ${when} <span style="color:#4a5a80">(${ago})</span></div>`;
+      }
+      if (s.created) {
+        const ago  = timeAgo(s.created);
+        const when = fmtDatetime(s.created);
+        return `<div class="meta-deploy">배포: <span class="val">${when}</span> <span style="color:#4a5a80">(${ago})</span></div>`;
+      }
+      return '';
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function dataAttrs(s) {
+      return `data-id="${escHtml(s.id)}" data-rawname="${escHtml(s.rawName)}" data-name="${escHtml(s.name)}" data-icon="${escHtml(s.icon)}" data-port="${s.port}" data-running="${s.running}" data-configured="${s.configured}"`;
+    }
+
+    function renderCard(s) {
+      const meta = buildUpdateMeta(s);
+
+      if (!s.configured) {
+        return `
+          <div class="card unconfigured card-item" ${dataAttrs(s)}>
+            <div class="card-icon">
+              ${escHtml(s.icon)}
+              <span class="dot ${s.running ? 'up' : 'down'}"></span>
+            </div>
+            <div class="card-body">
+              <div class="card-top">
+                <span class="card-name">${escHtml(s.name)}</span>
+                <div class="card-badges">
+                  <span class="badge-port">:${s.port}</span>
+                  <span class="badge-setup">설정하기</span>
+                  <button class="card-menu-btn" onclick="event.stopPropagation(); menuBtn(this)">⋮</button>
+                </div>
+              </div>
+              <div class="card-meta">${meta}</div>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <a class="card card-item" href="http://${nas}:${s.port}" target="_blank" ${dataAttrs(s)}>
+          <div class="card-icon">
+            ${escHtml(s.icon)}
+            <span class="dot ${s.running ? 'up' : 'down'}"></span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">${escHtml(s.name)}</span>
+              <div class="card-badges">
+                <span class="badge-port">:${s.port}</span>
+                <button class="card-menu-btn" onclick="event.preventDefault(); event.stopPropagation(); menuBtn(this)">⋮</button>
+              </div>
+            </div>
+            <div class="card-meta">${meta}</div>
+          </div>
+        </a>`;
+    }
+
+    // ── 데이터 로드 / 렌더 ──────────────────────────────────
     async function load() {
       try {
         const res  = await fetch('/api/services');
         const list = await res.json();
-        render(list);
-        document.getElementById('updated').textContent =
-          new Date().toLocaleTimeString('ko-KR');
+        document.getElementById('grid').innerHTML = list.map(renderCard).join('');
+        bindCardEvents();
+        const now = new Date();
+        document.getElementById('headerTime').textContent =
+          now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('footer').textContent =
+          '마지막 갱신 ' + now.toLocaleTimeString('ko-KR');
       } catch {
         document.getElementById('grid').innerHTML =
-          `<p style="color:#ef4444;font-size:.8rem;grid-column:1/-1">연결 오류</p>`;
+          `<p style="color:#ef4444;font-size:.8rem;">연결 오류</p>`;
       }
     }
 
-    function render(services) {
-      document.getElementById('grid').innerHTML = services.map(s => {
-        const dataAttrs = `data-id="${s.id}" data-rawname="${s.rawName}" data-name="${s.name}" data-icon="${s.icon}" data-port="${s.port}" data-running="${s.running}" data-configured="${s.configured}"`;
-
-        if (!s.configured) {
-          return `
-            <div class="app card-item" ${dataAttrs}>
-              <div class="icon-wrap unconfigured">
-                ${s.icon}
-                <span class="setup-badge">설정하기</span>
-                <span class="dot ${s.running ? 'up' : 'down'}"></span>
-              </div>
-              <span class="app-name dim">${s.name}</span>
-              <span class="app-port">:${s.port}</span>
-            </div>`;
-        }
-        return `
-          <a class="app card-item" href="http://${nas}:${s.port}" target="_blank" ${dataAttrs}>
-            <div class="icon-wrap">
-              ${s.icon}
-              <span class="dot ${s.running ? 'up' : 'down'}"></span>
-            </div>
-            <span class="app-name">${s.name}</span>
-            <span class="app-port">:${s.port}</span>
-          </a>`;
-      }).join('');
-
-      bindCardEvents();
+    // ── 카드 이벤트 바인딩 ───────────────────────────────────
+    function getCardData(card) {
+      return {
+        id:         card.getAttribute('data-id'),
+        rawName:    card.getAttribute('data-rawname'),
+        name:       card.getAttribute('data-name'),
+        icon:       card.getAttribute('data-icon'),
+        port:       card.getAttribute('data-port'),
+        running:    card.getAttribute('data-running') === 'true',
+        configured: card.getAttribute('data-configured') === 'true',
+      };
     }
 
     function bindCardEvents() {
-      const cards = document.querySelectorAll('.card-item');
-      cards.forEach(card => {
-        // 1. 우클릭 방지 및 우클릭 시 액션 시트 열기
+      document.querySelectorAll('.card-item').forEach(card => {
+        // 우클릭 → 액션 시트
         card.addEventListener('contextmenu', (e) => {
           e.preventDefault();
-          const id = card.getAttribute('data-id');
-          const rawName = card.getAttribute('data-rawname');
-          const name = card.getAttribute('data-name');
-          const icon = card.getAttribute('data-icon');
-          const port = card.getAttribute('data-port');
-          const running = card.getAttribute('data-running') === 'true';
-          const configured = card.getAttribute('data-configured') === 'true';
-          openActionSheet({ id, rawName, name, icon, port, running, configured });
+          openActionSheet(getCardData(card));
         });
-
-        // 2. 모바일 터치 길게 누르기 지원
+        // 모바일 롱프레스
         card.addEventListener('touchstart', () => {
           isLongPress = false;
           longPressTimer = setTimeout(() => {
             isLongPress = true;
-            const id = card.getAttribute('data-id');
-            const rawName = card.getAttribute('data-rawname');
-            const name = card.getAttribute('data-name');
-            const icon = card.getAttribute('data-icon');
-            const port = card.getAttribute('data-port');
-            const running = card.getAttribute('data-running') === 'true';
-            const configured = card.getAttribute('data-configured') === 'true';
-            openActionSheet({ id, rawName, name, icon, port, running, configured });
+            openActionSheet(getCardData(card));
           }, 600);
         }, { passive: true });
-
         card.addEventListener('touchend', (e) => {
-          if (longPressTimer) {
-            clearTimeout(longPressTimer);
-          }
-          if (isLongPress) {
-            e.preventDefault();
-          }
+          clearTimeout(longPressTimer);
+          if (isLongPress) e.preventDefault();
         });
-
-        card.addEventListener('touchmove', () => {
-          if (longPressTimer) {
-            clearTimeout(longPressTimer);
-          }
-        }, { passive: true });
-
-        // 3. 일반 클릭 제어 (미설정인 경우 설정창 열기)
+        card.addEventListener('touchmove', () => clearTimeout(longPressTimer), { passive: true });
+        // 일반 클릭 (미설정이면 모달)
         card.addEventListener('click', (e) => {
-          if (isLongPress) {
+          if (isLongPress) { isLongPress = false; e.preventDefault(); return; }
+          if (!card.getAttribute('data-configured') === 'true' || card.getAttribute('data-configured') === 'false') {
             e.preventDefault();
-            isLongPress = false;
-            return;
-          }
-          const configured = card.getAttribute('data-configured') === 'true';
-          if (!configured) {
-            e.preventDefault();
-            const rawName = card.getAttribute('data-rawname');
-            const id = card.getAttribute('data-id');
-            const name = card.getAttribute('data-name');
-            const icon = card.getAttribute('data-icon');
-            openModal(rawName, id, name, icon);
+            const d = getCardData(card);
+            openModal(d.rawName, d.id, d.name, d.icon);
           }
         });
       });
     }
 
-    // ── 모달 ──────────────────────────────────
+    // ── 더보기 버튼(⋮) ─────────────────────────────────────
+    function menuBtn(btn) {
+      const card = btn.closest('.card-item');
+      openActionSheet(getCardData(card));
+    }
+
+    // ── 설정 모달 ────────────────────────────────────────────
     function openModal(rawName, id, currentName = '', currentEmoji = '') {
       currentRaw = rawName;
-      currentId = id;
-      document.getElementById('modalRaw').textContent   = rawName;
+      currentId  = id;
+      document.getElementById('modalRaw').textContent  = rawName;
       document.getElementById('emojiInput').value = currentEmoji === '❓' ? '' : currentEmoji;
       document.getElementById('nameInput').value  = currentName || rawName;
       document.getElementById('overlay').classList.add('show');
       document.getElementById('emojiInput').focus();
     }
-
     function closeModal(e) {
       if (e && e.target !== document.getElementById('overlay')) return;
       document.getElementById('overlay').classList.remove('show');
-      currentRaw = null;
-      currentId = null;
+      currentRaw = null; currentId = null;
     }
-
     async function saveLabel() {
       const icon = document.getElementById('emojiInput').value.trim() || '🔧';
       const name = document.getElementById('nameInput').value.trim() || currentRaw;
@@ -533,7 +701,6 @@
       document.getElementById('overlay').classList.remove('show');
       load();
     }
-
     async function hideService() {
       await fetch('/api/labels', {
         method: 'POST',
@@ -544,78 +711,47 @@
       load();
     }
 
-    // ── 액션 시트 ──────────────────────────────────
+    // ── 액션 시트 ────────────────────────────────────────────
     function openActionSheet(s) {
       activeService = s;
-      document.getElementById('sheetIcon').textContent = s.icon;
+      document.getElementById('sheetIcon').textContent  = s.icon;
       document.getElementById('sheetTitle').textContent = s.name;
-      document.getElementById('sheetDesc').textContent = `${s.rawName} • :${s.port}`;
-      
-      const openBtn = document.getElementById('sheetOpenBtn');
-      if (s.running) {
-        openBtn.style.display = 'flex';
-      } else {
-        openBtn.style.display = 'none';
-      }
-
+      document.getElementById('sheetDesc').textContent  = `${s.rawName} • :${s.port}`;
+      document.getElementById('sheetOpenBtn').style.display = s.running ? 'flex' : 'none';
       document.getElementById('sheetOverlay').classList.add('show');
     }
-
     function closeSheet(e) {
       if (e && e.target !== document.getElementById('sheetOverlay')) return;
       document.getElementById('sheetOverlay').classList.remove('show');
       activeService = null;
     }
-
     function openServiceFromSheet() {
-      if (activeService) {
-        window.open(`http://${nas}:${activeService.port}`, '_blank');
-        closeSheet();
-      }
+      if (activeService) { window.open(`http://${nas}:${activeService.port}`, '_blank'); closeSheet(); }
     }
-
     function editServiceFromSheet() {
-      if (activeService) {
-        const s = activeService;
-        closeSheet();
-        openModal(s.rawName, s.id, s.name, s.icon);
-      }
+      if (activeService) { const s = activeService; closeSheet(); openModal(s.rawName, s.id, s.name, s.icon); }
     }
-
     async function deleteServiceFromSheet() {
       if (!activeService) return;
-      const confirmMsg = `⚠️ 경고: [${activeService.name}] (포트 :${activeService.port}) 컨테이너를 정말로 강제 종료하고 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`;
-      if (confirm(confirmMsg)) {
-        const id = activeService.id;
-        const rawName = activeService.rawName;
+      if (confirm(`⚠️ 경고: [${activeService.name}] (:${activeService.port}) 컨테이너를 강제 종료 및 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        const { id, rawName } = activeService;
         closeSheet();
         await deleteContainerAPI(id, rawName);
       }
     }
-
     async function deleteContainerFromModal() {
       if (!currentRaw) return;
-      const confirmMsg = `⚠️ 경고: [${currentRaw}] 컨테이너를 정말로 강제 종료하고 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`;
-      if (confirm(confirmMsg)) {
-        const id = currentId;
-        const rawName = currentRaw;
-        closeModal();
+      if (confirm(`⚠️ 경고: [${currentRaw}] 컨테이너를 강제 종료 및 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        const id = currentId; const rawName = currentRaw; closeModal();
         await deleteContainerAPI(id, rawName);
       }
     }
-
     async function deleteContainerAPI(id, rawName) {
       try {
-        const res = await fetch(`/api/containers/${id}?rawName=${encodeURIComponent(rawName)}`, {
-          method: 'DELETE'
-        });
+        const res  = await fetch(`/api/containers/${id}?rawName=${encodeURIComponent(rawName)}`, { method: 'DELETE' });
         const data = await res.json();
-        if (data.ok) {
-          alert('컨테이너가 성공적으로 종료 및 삭제되었습니다.');
-          load();
-        } else {
-          alert(`삭제 실패: ${data.error}`);
-        }
+        if (data.ok) { load(); }
+        else alert(`삭제 실패: ${data.error}`);
       } catch (err) {
         alert(`네트워크 오류: ${err.message}`);
       }
