@@ -239,9 +239,8 @@
     .meta-msg {
       font-size: 0.72rem;
       color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1.5;
+      word-break: break-all;
     }
     .meta-time {
       font-size: 0.64rem;
@@ -527,8 +526,11 @@
     function fmtDatetime(isoDate) {
       if (!isoDate) return '';
       const d = new Date(isoDate);
-      return d.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) + ' ' +
-             d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mi = String(d.getMinutes()).padStart(2, '0');
+      return `${mm}/${dd} ${hh}:${mi}`;
     }
 
     // ── 카드 HTML 생성 ────────────────────────────────────────
